@@ -12,9 +12,18 @@ function TodoForm() {
     const taskText = value;
     setValue('');
 
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      console.error('User not authenticated, cannot add todo');
+      alert('You must be logged in to add a todo.');
+      setValue(taskText); // Restore input
+      return;
+    }
+
     const { data, error } = await supabase
       .from('todos')
-      .insert([{ task: taskText }]) // use taskText
+      .insert([{ task: taskText, user_id: user.id }]) // Add user_id
       .select();
 
     if (error) {
